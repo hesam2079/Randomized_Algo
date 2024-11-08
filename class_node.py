@@ -1,18 +1,17 @@
 from random import randint
 
 class Node:
-    def __init__(self, node_id, initial_value, r, number_of_nodes):
+    def __init__(self, node_id, initial_value, r, total_number_of_nodes):
         self.id = node_id
         self.key = None
         self.initial_value = initial_value
         self.r = r
-        self.number_of_nodes = number_of_nodes
-
+        self.number_of_nodes = total_number_of_nodes
 
         self.value = [None] * self.number_of_nodes # values
-        self.value[node_id] = initial_value # set own value
+        self.value[node_id] = initial_value # set initial value
         self.level = [-1] * self.number_of_nodes # levels
-        self.level[self.id] = 0 # set own level
+        self.level[self.id] = 0 # set initial level
 
     def choose_key(self):
         self.key = randint(1, self.r) if self.id == 1 else None
@@ -36,7 +35,7 @@ class Node:
     def update_value(self, value_message):
         self.value = [max(a, b if b is not None else -1) for a,b in zip(value_message,self.value)]
 
-    def send_state(self):
+    def generate_message(self):
         message = {"information_level": self.level[self.id],
                    "value": self.value,
                    "key": self.key}
