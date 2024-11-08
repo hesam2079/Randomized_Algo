@@ -52,7 +52,7 @@ class Node:
 
     def decision_making(self, round):
         if self.r == round:
-            if self.key is not None and all(v == 1 for v in self.value if v is not None) and self.level[self.id] >= self.key:
+            if self.key is not None and all(v == 1 for v in self.value) and self.level[self.id] >= self.key:
                 return 1
             else:
                 return 0

@@ -11,7 +11,6 @@ def generate_nodes():
         value.append(initial_value)
         #initial_value = 1
         list_of_nodes.append(Node(node_id=i, initial_value=initial_value, number_of_nodes=number_of_nodes, r=r))
-        print(list_of_nodes[i])
     return list_of_nodes
 
 def generate_messages(): # all nodes generate the message
@@ -35,7 +34,6 @@ def deliver_messages(messages, delivery_list):
         for j in range(len(messages)):
             if delivery_list[j] and i != j: # the node can't send message to itself
                 nodes[i].receive_message(messages[j])
-        print(nodes[i])
 
 def message_passing_simulation():
    for round in range(r):
@@ -62,6 +60,19 @@ def create_table():
 
     print("└───────┴──────────────────────┴──────────────────────┴────────────┴──────────┘")
 
+def check_validity():
+    if (all(not v for v in value) and all(not d for d in decisions)) or (all(value) and not drop_message_flag):
+        return True
+    else:
+        return False
+
+def check_agreement():
+    if all(decisions) or not any(decisions):
+        return True
+    else:
+        return False
+
+
 if __name__ == "__main__":
     r = int(input("Enter number of rounds : "))
     number_of_nodes = int(input("Enter number of nodes : "))
@@ -74,18 +85,10 @@ if __name__ == "__main__":
         message_passing_simulation() # simulate massages pass through nodes
         decisions = [] # decisions made by nodes after massages passed
         result() # append all nodes decisions into decisions[]
-        agreement = False
-        validity = False
-        if all(value) or not all(value):
-            agreement = True
-        else:
-            agreement = False
-        if (not all(value) and not all(decisions)) or (all(value) and drop_message_flag):
-           validity = True
-        else:
-            validity = False
-        sample_output = (i, value, decisions, agreement, validity)
+        validity = check_validity()
+        agreement = check_agreement()
 
-        print(value, decisions, agreement, validity)
+
+        sample_output = (i, value, decisions, agreement, validity)
         output_data.append(sample_output)
-create_table()
+    create_table()
