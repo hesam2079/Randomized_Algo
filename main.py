@@ -9,7 +9,6 @@ def generate_nodes():
     for i in range(number_of_nodes):
         initial_value = randint(0, 1)
         value.append(initial_value)
-        #initial_value = 1
         list_of_nodes.append(Node(node_id=i, initial_value=initial_value, number_of_nodes=number_of_nodes, r=r))
     return list_of_nodes
 
@@ -24,7 +23,7 @@ def generate_delivery_list(): # create random delivery list
     global drop_message_flag
     for i in range(len(nodes)):
         random_value = randint(0, 1)
-        if random_value == 1:
+        if random_value == 0:
             drop_message_flag = True
         delivery_list.append(random_value)  # generate random delivery list
     return delivery_list
@@ -32,7 +31,7 @@ def generate_delivery_list(): # create random delivery list
 def deliver_messages(messages, delivery_list):
     for i in range(len(nodes)):
         for j in range(len(messages)):
-            if delivery_list[j] and i != j: # the node can't send message to itself
+            if delivery_list[j] != 0 and i != j: # the node can't send message to itself
                 nodes[i].receive_message(messages[j])
 
 def message_passing_simulation():
@@ -52,25 +51,39 @@ def create_table():
     print("├───────┼──────────────────────┼──────────────────────┼────────────┼──────────┤")
 
     # Print each row in the table
-    for row in output_data:
+    for i, row in enumerate(output_data):
         tindex, tvalue, tdecisions, tagreement, tvalidity = row
 
-        # Print the row with formatted and centered data
-        print(f"│ {tindex:^5} │ {str(tvalue):^20} │ {str(tdecisions):^20} │ {"True" if tagreement == 1 else "False":^10} │ {"True" if tvalidity == 1 else "False":^8} │")
 
+        if i != len(output_data) - 1:
+            # Print the row with formatted and centered data
+            print(f"│ {tindex:^5} │ {str(tvalue):^20} │ {str(tdecisions):^20} │ {"True" if tagreement == 1 else "False":^10} │ {"True" if tvalidity == 1 else "False":^8} │")
+        else:
+            print(f"│ {"-":^5} │ {"-":^20} │ {"-":^20} │ {str(tagreement):^10} │ {str(tvalidity):^8} │")
     print("└───────┴──────────────────────┴──────────────────────┴────────────┴──────────┘")
 
 def check_validity():
-    if (all(not v for v in value) and all(not d for d in decisions)) or (all(value) and not drop_message_flag):
+    if (((all(not v for v in value) and all(not d for d in decisions)) or
+            (all(value) and not drop_message_flag and all(decisions))) or
+            (any(value) and not all(value))):
         return True
     else:
+        global validity_counter
+        validity_counter += 1
         return False
 
 def check_agreement():
     if all(decisions) or not any(decisions):
         return True
     else:
+        global agreement_counter
+        agreement_counter += 1
         return False
+
+def calculate_validity_agreement_per_repeats():
+    validity_percentage = validity_counter / number_of_simulations
+    agreement_percentage = agreement_counter / number_of_simulations
+    return agreement_percentage, validity_percentage
 
 
 if __name__ == "__main__":
@@ -85,10 +98,16 @@ if __name__ == "__main__":
         message_passing_simulation() # simulate massages pass through nodes
         decisions = [] # decisions made by nodes after massages passed
         result() # append all nodes decisions into decisions[]
+        validity_counter = 0
+        agreement_counter = 0
         validity = check_validity()
         agreement = check_agreement()
+        agreement_percentage, validity_percentage = calculate_validity_agreement_per_repeats()
+        print(agreement_counter, validity_percentage)
 
 
         sample_output = (i, value, decisions, agreement, validity)
         output_data.append(sample_output)
+    last_line_sample = ("-", "-", "-", agreement_counter, validity_counter)
+    output_data.append(last_line_sample)
     create_table()
