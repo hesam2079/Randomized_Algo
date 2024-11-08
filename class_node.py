@@ -1,12 +1,14 @@
 from random import randint
 
 class Node:
-    def __init__(self, node_id, initial_value, r, total_number_of_nodes):
+    def __init__(self, node_id, initial_value, r, number_of_nodes):
         self.id = node_id
-        self.key = None
         self.initial_value = initial_value
         self.r = r
-        self.number_of_nodes = total_number_of_nodes
+        self.number_of_nodes = number_of_nodes
+
+        self.key = None
+        self.choose_key()  # choose the key value
 
         self.value = [None] * self.number_of_nodes # values
         self.value[node_id] = initial_value # set initial value
@@ -16,27 +18,34 @@ class Node:
     def choose_key(self):
         self.key = randint(1, self.r) if self.id == 1 else None
 
-    def update_state(self, message):
-        value_message = message["value"]
-        level_message = message["information_level"]
+    def receive_message(self, message):
+        message_value = message["value"]
+        message_level = message["information_level"]
         self.key = message["key"] if self.key is None else self.key # updating key; if my key is none then
                                                                     # i should update my key
-        self.update_value(value_message) # updating the value vector
-        self.update_level(level_message) # updating the information level vector
+        self.update_value(message_value) # updating the value vector
+        self.update_level(message_level) # updating the information level vector
 
 
-    def update_level(self, level_message):
+    def update_level(self, message_level):
         for i in range(self.number_of_nodes):
             if i != self.id:
-                self.level[i] =max(self.level[i], level_message[i])
-            else:
-                self.level[self.id] = min(level_message) + 1
+                self.level[i] =max(self.level[i], message_level[i])
+        self.level[self.id] = min(self.level) + 1
 
-    def update_value(self, value_message):
-        self.value = [max(a, b if b is not None else -1) for a,b in zip(value_message,self.value)]
+    def update_value(self, message_value):
+        for i in range(self.number_of_nodes):
+            if self.value[i] is None and message_value[i] is None:
+                continue
+            if self.value[i] is None and message_value[i] is not None:
+                self.value[i] = message_value[i]
+            if self.value[i] is not None and message_value[i] is None:
+                continue
+            if self.value[i] is not None and message_value[i] is not None:
+                self.value[i] = max(message_value[i], self.value[i])
 
     def generate_message(self):
-        message = {"information_level": self.level[self.id],
+        message = {"information_level": self.level,
                    "value": self.value,
                    "key": self.key}
         return message
@@ -44,12 +53,12 @@ class Node:
     def decision_making(self, round):
         if self.r == round:
             if self.key is not None and all(v == 1 for v in self.value if v is not None) and self.level[self.id] >= self.key:
-                return True
+                return 1
             else:
-                return False
+                return 0
 
 
 
 
     def __repr__(self):
-        return f"{"value = ", self.value} {"information level = ", self.level[self.id]} {"key = ", self.key}"
+        return f"{"value = ", self.value} {"information level = ", self.level} {"key = ", self.key}"
