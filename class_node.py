@@ -16,7 +16,7 @@ class Node:
         self.level[self.id] = 0 # set initial level
 
     def choose_key(self):
-        self.key = randint(1, self.r) if self.id == 1 else None
+        self.key = randint(1, self.r) if self.id == 0 else None
 
     def receive_message(self, message):
         message_value = message["value"]
@@ -31,7 +31,8 @@ class Node:
         for i in range(self.number_of_nodes):
             if i != self.id:
                 self.level[i] =max(self.level[i], message_level[i])
-        self.level[self.id] = min(self.level) + 1
+        min_value = min([value for i, value in enumerate(self.level) if i != self.id])
+        self.level[self.id] = min_value + 1
 
     def update_value(self, message_value):
         for i in range(self.number_of_nodes):
@@ -52,7 +53,7 @@ class Node:
 
     def decision_making(self, round):
         if self.r == round:
-            if self.key is not None and all(v == 1 for v in self.value) and self.level[self.id] >= self.key:
+            if (self.key is not None) and all(v == 1 for v in self.value) and (self.level[self.id] >= self.key):
                 return 1
             else:
                 return 0
